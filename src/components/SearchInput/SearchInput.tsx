@@ -9,9 +9,15 @@ interface IProps {
   customStyle?: StyleProp<ViewStyle>;
   search: string;
   setSearch: (text: string) => void;
+  placeholder: string;
 }
 
-const SearchInput: FC<IProps> = ({ search, setSearch, customStyle }) => {
+const SearchInput: FC<IProps> = ({
+  search,
+  setSearch,
+  placeholder,
+  customStyle,
+}) => {
   return (
     <View
       style={[
@@ -25,7 +31,7 @@ const SearchInput: FC<IProps> = ({ search, setSearch, customStyle }) => {
       ]}
     >
       <TextInput
-        placeholder={"Search..."}
+        placeholder={placeholder}
         value={search}
         onChangeText={(text) => setSearch(text)}
       />

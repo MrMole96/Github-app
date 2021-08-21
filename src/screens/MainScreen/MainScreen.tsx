@@ -4,6 +4,11 @@ import { useEffect } from "react";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
 import SearchInput from "../../components/SearchInput";
 import styles, { repoColor, userColor } from "./styles";
+import throttle from "lodash/throttle";
+import { useRef } from "react";
+import { StackMainScreen } from "../../navigation/Navigation";
+import { NavigationProp } from "@react-navigation/native";
+import { FC } from "react";
 
 const compareFunction = (a: any, b: any) => {
   if (a.id > b.id) return 1;
@@ -29,26 +34,57 @@ const fetchUsers = () => {
     .catch((e) => console.log("e", e));
 };
 
-const MainScreen = () => {
+const fetchByQuery = async (q: string) => {
+  const users = await axios
+    .get("https://api.github.com/search/users", { params: { q } })
+    .then(({ data }) => {
+      return data.items;
+    })
+    .catch((e) => console.log("e", e));
+  const repos = await axios
+    .get("https://api.github.com/search/repositories", { params: { q } })
+    .then(({ data }) => {
+      return data.items;
+    })
+    .catch((e) => console.log("e", e));
+  //   console.log("users", users);
+  //   console.log("repos", repos);
+  return [...users, ...repos];
+};
+
+interface IProps {
+  navigation: NavigationProp<StackMainScreen>;
+}
+
+const MainScreen: FC<IProps> = ({ navigation }) => {
   const [repositories, setRepositories] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
 
   const [results, setResults] = useState<any[]>([]);
+  const [filteredResults, setFilteredResults] = useState<any[]>([]);
 
   const [searchValue, setSearchValue] = useState("");
+  const throttled = useRef(
+    throttle((newValue) => {
+      fetchByQuery(newValue).then((filtered) => {
+        setFilteredResults(filtered);
+      });
+    }, 3000)
+  );
 
   useEffect(() => {
-    fetchRepositories().then((data) =>
-      setRepositories((arr) => [...arr, ...data])
-    );
-    fetchUsers().then((data) => setUsers((arr) => [...arr, ...data]));
+    fetchRepositories().then((data) => setRepositories(data));
+    fetchUsers().then((data) => setUsers(data));
   }, []);
 
   useEffect(() => {
     setResults((arr) => [...repositories, ...users].sort(compareFunction));
   }, [repositories, users]);
 
-  console.log("results", results);
+  useEffect(() => {
+    if (searchValue === "") setFilteredResults(results);
+    throttled.current(searchValue);
+  }, [searchValue]);
 
   const renderItem = (item: { id: number; name: string; login: string }) => {
     return (
@@ -62,7 +98,9 @@ const MainScreen = () => {
           paddingHorizontal: 20,
           paddingVertical: 10,
         }}
-        onPress={() => {}}
+        onPress={() => {
+          item.login && navigation;
+        }}
       >
         <Text>{item.id}</Text>
         <Text>{item.name}</Text>
@@ -82,11 +120,13 @@ const MainScreen = () => {
       </View>
       <SearchInput
         search={searchValue}
+        placeholder="Search by login or name"
         setSearch={setSearchValue}
         customStyle={{ marginVertical: 10 }}
       />
       <FlatList
-        data={results}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        data={filteredResults.length === 0 ? results : filteredResults}
         showsVerticalScrollIndicator={false}
         keyExtractor={(item, index) => `${item.id}_${index}`}
         renderItem={({ item }) => renderItem(item)}
