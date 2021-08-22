@@ -10,7 +10,7 @@ const Stack = createStackNavigator();
 
 export type StackMainScreen = {
   [routeNames.MainFlow.MainScreen]: undefined;
-  [routeNames.MainFlow.UserDetails]: undefined;
+  [routeNames.MainFlow.UserDetails]: { login: string };
 };
 
 const Navigation = () => {

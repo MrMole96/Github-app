@@ -9,6 +9,8 @@ import { useRef } from "react";
 import { StackMainScreen } from "../../navigation/Navigation";
 import { NavigationProp } from "@react-navigation/native";
 import { FC } from "react";
+import routeNames from "../../navigation/routeNames";
+import { Repository, User } from "../../models/models";
 
 const compareFunction = (a: any, b: any) => {
   if (a.id > b.id) return 1;
@@ -18,37 +20,36 @@ const compareFunction = (a: any, b: any) => {
 
 const fetchRepositories = () => {
   return axios
-    .get("https://api.github.com/repositories")
+    .get("repositories")
     .then(({ data }) => {
       return data;
     })
-    .catch((e) => console.log("e", e));
+    .catch((e) => console.log("e all repos", e));
 };
 
 const fetchUsers = () => {
   return axios
-    .get("https://api.github.com/users")
+    .get("users")
     .then(({ data }) => {
       return data;
     })
-    .catch((e) => console.log("e", e));
+    .catch((e) => console.log("e all users", e));
 };
 
 const fetchByQuery = async (q: string) => {
   const users = await axios
-    .get("https://api.github.com/search/users", { params: { q } })
+    .get("search/users", { params: { q } })
     .then(({ data }) => {
       return data.items;
     })
-    .catch((e) => console.log("e", e));
+    .catch((e) => console.log("e search user", e));
   const repos = await axios
-    .get("https://api.github.com/search/repositories", { params: { q } })
+    .get("search/repositories", { params: { q } })
     .then(({ data }) => {
       return data.items;
     })
-    .catch((e) => console.log("e", e));
-  //   console.log("users", users);
-  //   console.log("repos", repos);
+    .catch((e) => console.log("e search repos", e));
+
   return [...users, ...repos];
 };
 
@@ -57,8 +58,8 @@ interface IProps {
 }
 
 const MainScreen: FC<IProps> = ({ navigation }) => {
-  const [repositories, setRepositories] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
+  const [repositories, setRepositories] = useState<Repository[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
 
   const [results, setResults] = useState<any[]>([]);
   const [filteredResults, setFilteredResults] = useState<any[]>([]);
@@ -66,9 +67,10 @@ const MainScreen: FC<IProps> = ({ navigation }) => {
   const [searchValue, setSearchValue] = useState("");
   const throttled = useRef(
     throttle((newValue) => {
-      fetchByQuery(newValue).then((filtered) => {
-        setFilteredResults(filtered);
-      });
+      if (newValue !== "")
+        fetchByQuery(newValue).then((filtered) => {
+          setFilteredResults(filtered);
+        });
     }, 3000)
   );
 
@@ -78,7 +80,12 @@ const MainScreen: FC<IProps> = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
-    setResults((arr) => [...repositories, ...users].sort(compareFunction));
+    setResults(
+      (arr) =>
+        [...repositories, ...users].sort(compareFunction) as
+          | Repository[]
+          | User[]
+    );
   }, [repositories, users]);
 
   useEffect(() => {
@@ -86,7 +93,7 @@ const MainScreen: FC<IProps> = ({ navigation }) => {
     throttled.current(searchValue);
   }, [searchValue]);
 
-  const renderItem = (item: { id: number; name: string; login: string }) => {
+  const renderItem = (item: any) => {
     return (
       <TouchableOpacity
         style={{
@@ -99,7 +106,10 @@ const MainScreen: FC<IProps> = ({ navigation }) => {
           paddingVertical: 10,
         }}
         onPress={() => {
-          item.login && navigation;
+          item.login &&
+            navigation.navigate(routeNames.MainFlow.UserDetails, {
+              login: item.login,
+            });
         }}
       >
         <Text>{item.id}</Text>
@@ -108,6 +118,7 @@ const MainScreen: FC<IProps> = ({ navigation }) => {
       </TouchableOpacity>
     );
   };
+
   return (
     <View style={{ marginHorizontal: 20 }}>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
