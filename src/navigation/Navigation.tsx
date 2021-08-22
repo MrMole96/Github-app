@@ -2,15 +2,17 @@ import React from "react";
 import { View, Text } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
+
 import MainScreen from "../screens/MainScreen";
-import UserDetails from "../screens/UserDetails";
 import routeNames from "./routeNames";
+import UserDetailsScreen from "../screens/UserDetailsScreen";
+
 
 const Stack = createStackNavigator();
 
 export type StackMainScreen = {
   [routeNames.MainFlow.MainScreen]: undefined;
-  [routeNames.MainFlow.UserDetails]: { login: string };
+  [routeNames.MainFlow.UserDetailsScreen]: { login: string };
 };
 
 const Navigation = () => {
@@ -22,8 +24,8 @@ const Navigation = () => {
           component={MainScreen}
         />
         <Stack.Screen
-          name={routeNames.MainFlow.UserDetails}
-          component={UserDetails}
+          name={routeNames.MainFlow.UserDetailsScreen}
+          component={UserDetailsScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>

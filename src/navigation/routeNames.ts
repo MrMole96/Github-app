@@ -1,6 +1,6 @@
 enum MainScreenFlow {
   MainScreen = "MainScreen",
-  UserDetails = "UserDetails",
+  UserDetailsScreen = "UserDetailsScreen",
 }
 
 const routeNames = {

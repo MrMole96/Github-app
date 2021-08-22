@@ -1,16 +1,16 @@
-import axios from "axios";
-import React, { useState } from "react";
-import { useEffect } from "react";
+import React, { FC, useState, useEffect, useRef } from "react";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
-import SearchInput from "../../components/SearchInput";
-import styles, { repoColor, userColor } from "./styles";
+
+import axios from "axios";
 import throttle from "lodash/throttle";
-import { useRef } from "react";
-import { StackMainScreen } from "../../navigation/Navigation";
 import { NavigationProp } from "@react-navigation/native";
-import { FC } from "react";
+
+import { StackMainScreen } from "../../navigation/Navigation";
 import routeNames from "../../navigation/routeNames";
+import SearchInput from "../../components/SearchInput";
 import { Repository, User } from "../../models/models";
+
+import styles, { repoColor, userColor } from "./styles";
 
 const compareFunction = (a: any, b: any) => {
   if (a.id > b.id) return 1;
@@ -81,7 +81,7 @@ const MainScreen: FC<IProps> = ({ navigation }) => {
 
   useEffect(() => {
     setResults(
-      (arr) =>
+      () =>
         [...repositories, ...users].sort(compareFunction) as
           | Repository[]
           | User[]
@@ -107,7 +107,7 @@ const MainScreen: FC<IProps> = ({ navigation }) => {
         }}
         onPress={() => {
           item.login &&
-            navigation.navigate(routeNames.MainFlow.UserDetails, {
+            navigation.navigate(routeNames.MainFlow.UserDetailsScreen, {
               login: item.login,
             });
         }}
@@ -120,12 +120,12 @@ const MainScreen: FC<IProps> = ({ navigation }) => {
   };
 
   return (
-    <View style={{ marginHorizontal: 20 }}>
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
+    <View style={styles.marginHorizontal20}>
+      <View style={styles.legendContainer}>
         <View style={styles.legendUser} />
         <Text>User</Text>
       </View>
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <View style={styles.legendContainer}>
         <View style={styles.legendRepo} />
         <Text>Repositorium</Text>
       </View>
@@ -133,10 +133,10 @@ const MainScreen: FC<IProps> = ({ navigation }) => {
         search={searchValue}
         placeholder="Search by login or name"
         setSearch={setSearchValue}
-        customStyle={{ marginVertical: 10 }}
+        customStyle={styles.marginVertical10}
       />
       <FlatList
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={styles.paddingBottom100}
         data={filteredResults.length === 0 ? results : filteredResults}
         showsVerticalScrollIndicator={false}
         keyExtractor={(item, index) => `${item.id}_${index}`}

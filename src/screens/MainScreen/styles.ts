@@ -16,4 +16,8 @@ export default StyleSheet.create({
     height: 15,
     marginRight: 5,
   },
+  marginHorizontal20: { marginHorizontal: 20 },
+  legendContainer: { flexDirection: "row", alignItems: "center" },
+  marginVertical10: { marginVertical: 10 },
+  paddingBottom100: { paddingBottom: 100 },
 });
